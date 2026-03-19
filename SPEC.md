@@ -1,6 +1,6 @@
 # Hail: Human-AI Language
 
-Version 0.1.0 (draft)
+Version 0.2.0 (draft)
 
 ## What it is
 
@@ -64,7 +64,57 @@ Multiple directives of the same type stack. `^tone warm` plus `^tone concise` me
 
 Unknown directives are ignored. This keeps the language forward-compatible. A parser from 2026 won't choke on a directive added in 2028.
 
-Directives persist across turns unless explicitly overridden.
+## Scoping
+
+Directives have two lifetimes depending on where they appear.
+
+**Header directives** appear before the first line of plain text in a document. They are session-level. They persist across all turns until explicitly cleared or replaced.
+
+**Inline directives** appear inside the body, after plain text has started. They are turn-level. They apply to the current turn only and expire at the next `---` separator.
+
+```
+^context Building a mobile app        <-- header, persists
+^tone friendly                         <-- header, persists
+
+What colors should I use?
+
+^format bullet list                    <-- inline, this turn only
+
+---
+
+Now write the CSS.                     <-- ^context and ^tone still active
+                                       <-- ^format bullet list has expired
+```
+
+To promote an inline directive to session-level, move it to the header or restate it in a new turn's header block (directives before that turn's first plain text line).
+
+## Overrides and clearing
+
+To replace a header directive, restate it with a new value. The old value is gone.
+
+```
+^tone friendly
+
+What colors should I use?
+
+---
+
+^tone formal
+
+Now write the client proposal.         <-- tone is formal, not friendly
+```
+
+To clear a directive entirely, use the directive name with no value.
+
+```
+^tone
+
+Write whatever feels natural.          <-- no tone constraint
+```
+
+This works for any directive. `^avoid` with no value removes all avoid rules. `^as` with no value drops the persona.
+
+For stacking directives like `^example`, clearing removes all stacked values. To replace just one, clear and restate the ones you want to keep.
 
 ## Multi-line blocks
 
@@ -125,39 +175,13 @@ This is communication, not enforcement. The AI interprets `body: 2-3 sentences` 
 
 ## Document structure
 
-Directives at the top of a document form a header. Everything after the first plain text line is the body. Directives can still appear in the body as inline overrides.
+A Hail document has two regions. The header is every `^` directive before the first line of plain text. The body is everything after. See the Scoping section for how these regions affect directive lifetime.
 
-```
-^context Building a CLI tool in Rust
-^tone terse, technical
+For multi-turn conversations, `---` separates turns. Header directives carry forward across all turns. Inline directives expire at the next `---`.
 
-How should I structure the argument parser?
-```
+An optional `^hail` version line, if present, must be the very first line of the document, before the header directives.
 
-For multi-turn conversations, `---` separates turns. Header directives carry forward.
-
-```
-^context Building a CLI tool in Rust
-^tone terse, technical
-
-How should I structure the argument parser?
-
----
-
-vsuggestion look at clap's derive API
-
-Use clap with derive macros. Here's the structure...
-
----
-
-Now add subcommands for init and run.
-
-^format code only
-```
-
-The third turn inherits `^context` and `^tone` from the header. The `^format code only` applies to that turn only.
-
-## Minimal examples
+## Examples
 
 The simplest valid Hail document:
 
@@ -172,48 +196,105 @@ With one directive:
 What's the capital of France?
 ```
 
-A full document:
+A full conversation showing scoping, overrides, AI directives, multi-line blocks, examples, and shape:
 
 ```
+^hail 0.1
+
 ^context {
 Medication reminder app for elderly users.
 React Native with Expo. Passed accessibility audit Feb 2026.
+Target: iOS and Android.
 }
 ^audience end users, age 65+
 ^tone warm, encouraging
 ^avoid medical jargon, technical error messages
+^example {
+input: "Error 403: Authentication failure"
+output: "We couldn't sign you in. Check your password and try again."
+}
 
 Write onboarding copy for the first 3 screens.
-Each screen gets a heading and body text.
 
 ^length 50 words per screen max
-
 ^shape {
-screen_number: int
+screen: int
 heading: short phrase
 body: 2-3 sentences, simple language
 }
-```
-
-A conversation with AI response:
-
-```
-^context planning a weekend trip to Melbourne
-^tone casual
-
-What should I do on Saturday?
 
 ---
 
-Here are some ideas for Saturday:
+Here's your onboarding copy:
 
-1. Morning at Queen Victoria Market...
-2. Walk along the Yarra...
+1. **Welcome**
+   You're in the right place. SimpleHealth helps you take your
+   medication on time, every time. No fuss.
 
-vassumed you're arriving Friday night
-vuncertain are you driving or flying? parking changes the plan
-vsuggestion book the NGV weekend exhibition, it sells out
+2. **Set Your Reminders**
+   Tell us what you take and when. We'll send you a gentle
+   nudge when it's time. You can change this whenever you like.
+
+3. **You're All Set**
+   That's it. We'll remind you, you stay healthy.
+   Tap the big green button to get started.
+
+vassumed screens will have a "Next" button at the bottom
+vsuggestion {
+Screen 2 says "tell us" but the input form only has
+medication name and time fields. Consider saying
+"add your medication and pick a time" to match the UI.
+}
+vref Apple HIG, Accessibility Guidelines 2026
+
+---
+
+Good. Now write the push notification for a missed dose.
+
+^tone concerned but not alarming
+^length 2 sentences max
+
+---
+
+You missed your 2pm medication. Open SimpleHealth to
+mark it as taken or skip it for today.
+
+vassumed the notification shows the specific time
+vuncertain do you want the medication name in the notification?
+  some users take multiple meds and the name helps
+
+---
+
+^tone
+
+Yes, include the med name. And drop the tone directive,
+just write it plain.
+
+---
+
+You missed your 2pm Metformin. Open SimpleHealth to
+mark it as taken or skip it for today.
+
+vassumed "Metformin" is a placeholder, the app fills in the real name
 ```
+
+This conversation shows header directives (`^context`, `^audience`, `^tone`, `^avoid`, `^example`) persisting across turns. Inline directives (`^length`, `^shape`) apply only to their turn. The `^tone concerned but not alarming` in turn 3 overrides the header `^tone warm, encouraging`. The `^tone` with no value in turn 5 clears the tone entirely. AI directives (`vassumed`, `vsuggestion`, `vuncertain`, `vref`) surface metadata without breaking the natural response.
+
+## Versioning
+
+A Hail document can declare which spec version it targets using `^hail` as the first line of the file.
+
+```
+^hail 0.1
+
+^context Building a CLI tool in Rust
+
+How should I structure the argument parser?
+```
+
+The version is optional. If omitted, the parser uses the latest version it supports. The version number follows major.minor only. No patch versions. Spec changes that add new directives bump the minor version. Changes that break existing documents bump the major version.
+
+A parser that encounters a version it doesn't support should warn but still attempt to parse the document. Unknown directives are already ignored by design, so a newer document will mostly work with an older parser. The version line is a hint, not a gate.
 
 ## What Hail is not
 
