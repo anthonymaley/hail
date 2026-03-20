@@ -12,7 +12,7 @@ File extension: `.hail` (optional)
 MIME type: `text/hail` (proposed, not registered)
 Encoding: UTF-8
 
-Hail directives may also be used inside markdown files. In practice, `.md` is the recommended default for most repos until dedicated Hail tooling exists.
+Hail directives work inside markdown files. For single-turn use, `.md` is fine. For multi-turn conversations with `---` separators, use `.hail` or put `<<:hail:` on the first line to enable native parsing.
 
 ## Design principles
 
@@ -114,7 +114,7 @@ What should the landing page look like?
 
 The name is optional. If absent, the directive belongs to whoever is speaking that turn. For single-human, single-AI conversations, names aren't needed and the syntax is unchanged.
 
-A parser disambiguates names from directives structurally: a named directive always has three colon-separated segments after the prefix (`<<:name:directive: value`), while an unnamed directive has two (`<<:directive: value`). The parser counts segments. It does not need a list of known directive names. This keeps forward-compatibility intact: a new directive added in a future version won't be misread as a speaker name by an older parser.
+A parser disambiguates named directives structurally, not by looking up known names. The final structural colon ends the directive header and is followed by a space, `{`, or end of line. One segment before it means unnamed (`<<:context: value`). Two segments means named (`<<:anthony:context: value`). Colons after the final structural colon belong to the value. More than two segments before it is invalid.
 
 Named directives follow the same scoping rules as unnamed ones. `<<:anthony:tone: formal` in the header persists for anthony across all turns. `<<:sarah:tone: casual` is independent and persists for sarah.
 
@@ -148,11 +148,13 @@ Directives have two lifetimes depending on where they appear.
 
 **Shared durable directives** using `^:` are session-level by meaning, not by position. They may appear anywhere in a document and remain active until explicitly cleared or replaced.
 
-**Header directives** using `<<:` or `>>:` appear before the first line of plain text in a turn. They are session-level. They persist across all subsequent turns until explicitly cleared or replaced.
+**Human header directives** using `<<:` appear before the first plain text line in a turn. They persist across all subsequent turns until cleared or replaced.
 
-Each turn has its own header region. In the first turn, the header is every `<<:` or `>>:` directive before the first plain text line. In later turns (after a `---` separator), any `<<:` or `>>:` directives before that turn's first plain text line are also treated as session-level.
+Each turn has its own header region. Directives before that turn's first plain text line are session-level.
 
-**Inline directives** using `<<:` or `>>:` appear after plain text has started within a turn. They are turn-level. They apply to the current turn only and expire at the next `---` separator.
+**AI directives** using `>>:` are response-level. They describe the AI turn they appear in and do not persist into later turns. To make an AI observation durable, promote it to `^:`.
+
+**Inline human directives** using `<<:` appear after plain text has started within a turn. They apply to that turn only and expire at the next `---`.
 
 Durable `^:` directives are not affected by header/inline positioning. They are always session-level.
 
@@ -171,7 +173,7 @@ What colors should I use?
 Now write the CSS.
 ```
 
-In the example above, `^:context:` is durable and remains active until changed. `<<:tone:` persists because it is in turn 1's header. `<<:format:` is inline (after plain text) and expires at the separator. `<<:audience:` is in turn 2's header (before that turn's plain text) and persists from turn 2 onward.
+`^:context:` is durable. `<<:tone:` persists (turn 1 header). `<<:format:` expires (inline). `<<:audience:` persists (turn 2 header). `>>:` directives stay attached to the AI turn that produced them.
 
 ## Overrides and clearing
 
@@ -262,23 +264,23 @@ The AI interprets `body: 2-3 sentences` with common sense.
 
 ## Document structure
 
-Each turn in a Hail document has a header region (directives before that turn's first plain text line) and a body region (everything after). See the Scoping section for how these regions affect directive lifetime.
+Hail has two parsing modes.
 
-Shared `^:` directives are durable by meaning and may appear in either region of any turn.
+**Native mode** applies to `.hail` files and to any document with `<<:hail:` on the first line. In native mode, `---` on its own line (outside braced blocks and fenced code) is a turn separator. Each turn has a header region and a body region.
 
-For multi-turn conversations, `---` separates turns. Shared directives and header directives carry forward across all turns. Inline directives expire at the next `---`.
+**Embedded mode** applies to `.md` files and other formats without `<<:hail:` on the first line. The document is parsed as a single turn. `---` keeps its host-format meaning (markdown thematic break, YAML frontmatter). Directives still work but there are no turn separators.
 
-A `---` line is a turn separator only when it appears on its own line with blank lines before and after it, outside a braced directive block, and outside fenced code. This distinguishes turn separators from markdown thematic breaks (which often lack surrounding blank lines) and YAML frontmatter (which uses `---` at the start of the document).
+In both modes, `^:` directives are durable and may appear anywhere. `<<:` header directives carry forward across turns. Inline `<<:` directives expire at the next turn boundary. `>>:` directives stay attached to the AI turn that produced them.
 
-An optional `<<:hail:` version line, if present, must be the very first line of the document, before the header directives.
+An optional `<<:hail:` version line, if present, must be the very first line of the document.
 
 ## Parsing notes
 
-Speaker names may contain letters, numbers, `_`, and `-`. Since named directives are disambiguated structurally (by segment count, not by name lookup), speaker names do not need to avoid directive names. A speaker named "tone" is parsed correctly because `<<:tone: value` has two segments while `<<:tone:tone: value` would have three.
+Speaker names may contain letters, numbers, `_`, and `-`. Names don't need to avoid directive names because disambiguation is structural, not name-based.
 
 Directive names are case-sensitive. Use lowercase.
 
-Whitespace immediately after the final `:` is ignored.
+The final structural colon is followed by a space, `{`, or end of line. Whitespace after it is ignored.
 
 An empty directive value clears that directive in the current scope.
 
@@ -443,9 +445,9 @@ A Hail document can declare which spec version it targets using `<<:hail:` as th
 How should I structure the argument parser?
 ```
 
-The version is optional. If omitted, the parser uses the latest version it supports. The version number follows major.minor only. No patch versions. Spec changes that add new directives bump the minor version. Changes that break existing documents bump the major version.
+The version is optional. In `.hail` files, native mode applies regardless. In `.md` files, omitting the version line keeps the document in embedded single-turn mode. The version number follows major.minor only. No patch versions. New directives bump the minor. Breaking changes bump the major.
 
-A parser that encounters a version it doesn't support should warn but still attempt to parse the document. Unknown directives are already ignored by design, so a newer document will mostly work with an older parser. The version line is a hint, not a gate.
+A parser that doesn't support the declared version should warn but still try. The version line is a hint, not a gate.
 
 ## What Hail is not
 
