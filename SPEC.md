@@ -1,6 +1,6 @@
 # Hail: Human-AI Language
 
-Version 0.9.0 (draft)
+Version 0.9.1 (draft)
 
 ## What it is
 
@@ -9,7 +9,7 @@ Hail is a markup language for human-AI communication. Plain text with optional d
 A valid Hail document can be a single sentence. The structure is there when you need it.
 
 File extension: `.hail` (optional)
-MIME type: `text/hail`
+MIME type: `text/hail` (proposed, not registered)
 Encoding: UTF-8
 
 Hail directives may also be used inside markdown files. In practice, `.md` is the recommended default for most repos until dedicated Hail tooling exists.
@@ -114,7 +114,7 @@ What should the landing page look like?
 
 The name is optional. If absent, the directive belongs to whoever is speaking that turn. For single-human, single-AI conversations, names aren't needed and the syntax is unchanged.
 
-A parser disambiguates names from directives by checking against the known directive list. If the segment after a directive prefix is a recognized directive name, there's no speaker name. If it's not, it's a speaker name and the directive follows.
+A parser disambiguates names from directives structurally: a named directive always has three colon-separated segments after the prefix (`<<:name:directive: value`), while an unnamed directive has two (`<<:directive: value`). The parser counts segments. It does not need a list of known directive names. This keeps forward-compatibility intact: a new directive added in a future version won't be misread as a speaker name by an older parser.
 
 Named directives follow the same scoping rules as unnamed ones. `<<:anthony:tone: formal` in the header persists for anthony across all turns. `<<:sarah:tone: casual` is independent and persists for sarah.
 
@@ -126,9 +126,21 @@ If named and unnamed directives of the same type are both present, the named val
 
 Directives can appear anywhere in the document: top, inline, bottom.
 
-Multiple directives of the same type stack. `<<:tone: warm` plus `<<:tone: concise` means warm and concise.
+By default, restating a directive replaces the previous value. `<<:tone: formal` after `<<:tone: friendly` means formal, not both.
 
-Unknown directives are ignored. A parser from 2026 won't choke on a directive added in 2028.
+The following directives are stackable (multiple values accumulate rather than replacing):
+- `<<:example:`
+- `<<:avoid:`
+- `^:context:`
+- `^:constraint:`
+- `^:decision:`
+- `^:artifact:`
+- `>>:ref:`
+- `>>:suggestion:`
+
+For stackable directives, each new instance adds to the set. To clear all stacked values, use the directive with no value, then restate the ones you want to keep.
+
+Unknown directives should be ignored rather than causing a parse failure. Forward-compatibility is best-effort: an older parser will skip directives it doesn't recognize, but it may not interpret their scoping or stacking behavior correctly.
 
 ## Scoping
 
@@ -136,11 +148,13 @@ Directives have two lifetimes depending on where they appear.
 
 **Shared durable directives** using `^:` are session-level by meaning, not by position. They may appear anywhere in a document and remain active until explicitly cleared or replaced.
 
-**Header directives** appear before the first line of plain text in a document. They are session-level. They persist across all turns until explicitly cleared or replaced.
+**Header directives** using `<<:` or `>>:` appear before the first line of plain text in a turn. They are session-level. They persist across all subsequent turns until explicitly cleared or replaced.
 
-**Inline directives** appear inside the body, after plain text has started. They are turn-level. They apply to the current turn only and expire at the next `---` separator.
+Each turn has its own header region. In the first turn, the header is every `<<:` or `>>:` directive before the first plain text line. In later turns (after a `---` separator), any `<<:` or `>>:` directives before that turn's first plain text line are also treated as session-level.
 
-This header/inline distinction applies to `<<:` and `>>:`. Durable `^:` directives are not turn-scoped.
+**Inline directives** using `<<:` or `>>:` appear after plain text has started within a turn. They are turn-level. They apply to the current turn only and expire at the next `---` separator.
+
+Durable `^:` directives are not affected by header/inline positioning. They are always session-level.
 
 ```
 ^:context: Building a mobile app
@@ -152,16 +166,16 @@ What colors should I use?
 
 ---
 
+<<:audience: developers
+
 Now write the CSS.
 ```
 
-In the example above, `^:context:` remains active until changed. `<<:tone:` persists because it is a header directive. `<<:format:` applies only to the first turn and expires at the separator.
-
-To promote an inline flow directive to session-level, move it to the header or restate it in a new turn's header block.
+In the example above, `^:context:` is durable and remains active until changed. `<<:tone:` persists because it is in turn 1's header. `<<:format:` is inline (after plain text) and expires at the separator. `<<:audience:` is in turn 2's header (before that turn's plain text) and persists from turn 2 onward.
 
 ## Overrides and clearing
 
-To replace a directive, restate it with a new value. The old value is gone.
+For replacing directives (the default), restating with a new value replaces the old one.
 
 ```
 <<:tone: friendly
@@ -175,7 +189,9 @@ What colors should I use?
 Now write the client proposal.
 ```
 
-To clear a directive entirely, use the directive prefix and name with no value.
+For stackable directives, each restatement adds to the set rather than replacing.
+
+To clear any directive (replacing or stackable), use the directive prefix and name with no value.
 
 ```
 <<:tone:
@@ -183,9 +199,7 @@ To clear a directive entirely, use the directive prefix and name with no value.
 Write whatever feels natural.
 ```
 
-This works for any directive. `<<:avoid:` with no value removes all avoid rules. `<<:as:` with no value drops the persona. `^:goal:` with no value clears the durable goal.
-
-For stacking directives like `<<:example:`, clearing removes all stacked values. To replace just one, clear and restate the ones you want to keep.
+This works for any directive. `<<:avoid:` with no value removes all stacked avoid rules. `<<:as:` with no value drops the persona. `^:goal:` with no value clears the durable goal. For stackable directives, clearing removes all accumulated values. To keep some, clear first, then restate the ones you want.
 
 ## Multi-line blocks
 
@@ -248,19 +262,19 @@ The AI interprets `body: 2-3 sentences` with common sense.
 
 ## Document structure
 
-A Hail document has two regions. The header is every `<<:` or `>>:` directive before the first line of plain text. The body is everything after. See the Scoping section for how these regions affect directive lifetime.
+Each turn in a Hail document has a header region (directives before that turn's first plain text line) and a body region (everything after). See the Scoping section for how these regions affect directive lifetime.
 
-Shared `^:` directives are durable by meaning and may appear in either region.
+Shared `^:` directives are durable by meaning and may appear in either region of any turn.
 
 For multi-turn conversations, `---` separates turns. Shared directives and header directives carry forward across all turns. Inline directives expire at the next `---`.
 
-A `---` line is a turn separator only when it appears on its own line outside a braced directive block and outside fenced code.
+A `---` line is a turn separator only when it appears on its own line with blank lines before and after it, outside a braced directive block, and outside fenced code. This distinguishes turn separators from markdown thematic breaks (which often lack surrounding blank lines) and YAML frontmatter (which uses `---` at the start of the document).
 
 An optional `<<:hail:` version line, if present, must be the very first line of the document, before the header directives.
 
 ## Parsing notes
 
-Speaker names may contain letters, numbers, `_`, and `-`. Speaker names must not match reserved directive names. If a name collides with a directive name, rename the speaker identifier.
+Speaker names may contain letters, numbers, `_`, and `-`. Since named directives are disambiguated structurally (by segment count, not by name lookup), speaker names do not need to avoid directive names. A speaker named "tone" is parsed correctly because `<<:tone: value` has two segments while `<<:tone:tone: value` would have three.
 
 Directive names are case-sensitive. Use lowercase.
 
