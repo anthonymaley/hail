@@ -8,9 +8,10 @@ Hail is a lightweight markup language for structured communication between human
 
 A valid Hail document can be a single sentence. The structure is there when you need it.
 
-File extension: `.hail`
-MIME type: `text/hail`
+File extension: `.md` (recommended) or `.hail`
 Encoding: UTF-8
+
+Hail directives work inside standard markdown files. Use `.md` for maximum compatibility with editors, renderers, and platforms. The `.hail` extension is reserved for tooling that needs to identify Hail-specific files.
 
 ## Design principles
 

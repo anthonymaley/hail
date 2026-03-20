@@ -25,10 +25,10 @@ docs/
   playbook.md                — this file
   proposals/                 — historical spec proposals and reviews
 examples/
-  code-review.hail           — code review conversation
-  creative-writing.hail      — blog post writing
-  multi-audience.hail        — same incident, three audiences
-  quick-task.hail            — minimal one-shot task
+  code-review.md             — code review conversation
+  creative-writing.md        — blog post writing
+  multi-audience.md          — same incident, three audiences
+  quick-task.md              — minimal one-shot task
 ```
 
 ## Integrations
