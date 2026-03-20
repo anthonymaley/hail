@@ -1,6 +1,6 @@
 # Hail: Human-AI Language
 
-Version 0.5.0 (draft)
+Version 0.9.0 (draft)
 
 ## What it is
 
@@ -16,17 +16,45 @@ Encoding: UTF-8
 
 Plain text is valid Hail. Any natural language sentence works. You add structure only when freeform language isn't cutting it.
 
-Directives are persistent. You set `<<:context:` once and it holds across the conversation until you override it. The scaffolding stays while the conversation evolves around it.
+Directives are persistent. You set context once and it holds across the conversation until you override it. The scaffolding stays while the conversation evolves around it.
 
-Direction is visible. `<<:` means human to AI. `>>:` means AI to human. The symbols work like arrows: `<<:` pushes instructions in, `>>:` pushes observations back out. In a markdown renderer, `>>:` directives display as blockquotes, giving you visual hierarchy for free.
+Direction is visible. Hail uses three directive channels:
+
+- `^:` for durable shared collaboration state
+- `<<:` for human-to-AI flow directives
+- `>>:` for AI-to-human flow directives
+
+The arrows still describe conversational direction. The `^:` channel is directionless shared state.
+
+Hail is advisory by default. Directives guide interpretation and coordination, but they do not create executable logic or guaranteed enforcement.
 
 ## Directives
 
-A directive is a line starting with `<<:` (human to AI) or `>>:` (AI to human). It's metadata. It tells the other side how to interpret the natural language around it.
+A directive is a line starting with `^:`, `<<:`, or `>>:`. It's metadata. It tells the other side how to interpret the natural language around it.
+
+### Shared durable directives (^:)
+
+`^:context:` sets standing background that all participants should treat as active.
+
+`^:goal:` sets the durable objective for the collaboration.
+
+`^:ownership:` assigns responsibility for an area, task, file set, or role.
+
+`^:decision:` records an accepted decision that should persist across later turns.
+
+`^:constraint:` records a standing rule or limitation.
+
+`^:status:` records the durable state of the work such as `todo`, `in_progress`, `review`, or `done`.
+
+`^:artifact:` records a durable pointer to a working document, file, branch, issue, or output.
+
+`^:blocked:` records a blocker that should remain visible until cleared. When `^:blocked:` is active, the work is considered blocked regardless of `^:status:` value. Clear `^:blocked:` when the blocker is resolved.
 
 ### Human directives (<<:)
 
 `<<:context:` sets what the AI needs to know.
+
+Use `^:context:` instead when the context should remain active across participants or across multiple turns. If in doubt, use `^:context:`. It is the safer default.
 
 `<<:tone:` sets how the response should feel.
 
@@ -44,6 +72,8 @@ A directive is a line starting with `<<:` (human to AI) or `>>:` (AI to human). 
 
 `<<:shape:` defines the expected output structure.
 
+`<<:priority:` sets relative importance such as `low`, `medium`, `high`, or freeform text.
+
 ### AI directives (>>:)
 
 `>>:assumed:` flags what the AI filled in on its own.
@@ -56,11 +86,19 @@ A directive is a line starting with `<<:` (human to AI) or `>>:` (AI to human). 
 
 `>>:limit:` explains what the AI couldn't do and why.
 
+AI directives are typically placed after the main response content, so the primary answer remains easy to read.
+
 ### Named directives
 
 In multi-party conversations (multiple humans, multiple AIs, or both), add a name after the direction prefix to identify the speaker.
 
 ```
+^:ownership: {
+anthony: product direction
+codex: implementation
+claude: review
+}
+
 <<:anthony:context: I'm the product lead
 <<:sarah:context: I'm the designer
 
@@ -74,9 +112,13 @@ What should the landing page look like?
 
 The name is optional. If absent, the directive belongs to whoever is speaking that turn. For single-human, single-AI conversations, names aren't needed and the syntax is unchanged.
 
-A parser disambiguates names from directives by checking against the known directive list. If the segment after `<<:` is a recognized directive name, there's no speaker name. If it's not, it's a speaker name and the directive follows.
+A parser disambiguates names from directives by checking against the known directive list. If the segment after a directive prefix is a recognized directive name, there's no speaker name. If it's not, it's a speaker name and the directive follows.
 
 Named directives follow the same scoping rules as unnamed ones. `<<:anthony:tone: formal` in the header persists for anthony across all turns. `<<:sarah:tone: casual` is independent and persists for sarah.
+
+For `^:` directives, unnamed values are shared by default. Named `^:` directives apply to the named participant.
+
+If named and unnamed directives of the same type are both present, the named value overrides the unnamed value for that participant.
 
 ### Rules
 
@@ -90,29 +132,34 @@ Unknown directives are ignored. This keeps the language forward-compatible. A pa
 
 Directives have two lifetimes depending on where they appear.
 
+**Shared durable directives** using `^:` are session-level by meaning, not by position. They may appear anywhere in a document and remain active until explicitly cleared or replaced.
+
 **Header directives** appear before the first line of plain text in a document. They are session-level. They persist across all turns until explicitly cleared or replaced.
 
 **Inline directives** appear inside the body, after plain text has started. They are turn-level. They apply to the current turn only and expire at the next `---` separator.
 
+This header/inline distinction applies to `<<:` and `>>:`. Durable `^:` directives are not turn-scoped.
+
 ```
-<<:context: Building a mobile app     <-- header, persists
-<<:tone: friendly                      <-- header, persists
+^:context: Building a mobile app
+<<:tone: friendly
 
 What colors should I use?
 
-<<:format: bullet list                 <-- inline, this turn only
+<<:format: bullet list
 
 ---
 
-Now write the CSS.                     <-- <<:context: and <<:tone: still active
-                                       <-- <<:format: has expired
+Now write the CSS.
 ```
 
-To promote an inline directive to session-level, move it to the header or restate it in a new turn's header block (directives before that turn's first plain text line).
+In the example above, `^:context:` remains active until changed. `<<:tone:` persists because it is a header directive. `<<:format:` applies only to the first turn and expires at the separator.
+
+To promote an inline flow directive to session-level, move it to the header or restate it in a new turn's header block.
 
 ## Overrides and clearing
 
-To replace a header directive, restate it with a new value. The old value is gone.
+To replace a directive, restate it with a new value. The old value is gone.
 
 ```
 <<:tone: friendly
@@ -123,7 +170,7 @@ What colors should I use?
 
 <<:tone: formal
 
-Now write the client proposal.         <-- tone is formal, not friendly
+Now write the client proposal.
 ```
 
 To clear a directive entirely, use the directive prefix and name with no value.
@@ -131,10 +178,10 @@ To clear a directive entirely, use the directive prefix and name with no value.
 ```
 <<:tone:
 
-Write whatever feels natural.          <-- no tone constraint
+Write whatever feels natural.
 ```
 
-This works for any directive. `<<:avoid:` with no value removes all avoid rules. `<<:as:` with no value drops the persona.
+This works for any directive. `<<:avoid:` with no value removes all avoid rules. `<<:as:` with no value drops the persona. `^:goal:` with no value clears the durable goal.
 
 For stacking directives like `<<:example:`, clearing removes all stacked values. To replace just one, clear and restate the ones you want to keep.
 
@@ -143,7 +190,7 @@ For stacking directives like `<<:example:`, clearing removes all stacked values.
 For values longer than one line, use `{ }` brackets after the directive name.
 
 ```
-<<:context: {
+^:context: {
 Medication reminder app for elderly users.
 React Native with Expo.
 Passed accessibility audit Feb 2026.
@@ -151,6 +198,8 @@ Passed accessibility audit Feb 2026.
 ```
 
 Blocks can contain any text including code snippets or markdown. Nesting is not supported. Keep parsing trivial.
+
+Lines inside a braced block are not parsed for directives. The block content is treated as opaque text.
 
 AI directives use the same syntax.
 
@@ -197,11 +246,27 @@ This is communication, not enforcement. The AI interprets `body: 2-3 sentences` 
 
 ## Document structure
 
-A Hail document has two regions. The header is every `<<:` directive before the first line of plain text. The body is everything after. See the Scoping section for how these regions affect directive lifetime.
+A Hail document has two regions. The header is every `<<:` or `>>:` directive before the first line of plain text. The body is everything after. See the Scoping section for how these regions affect directive lifetime.
 
-For multi-turn conversations, `---` separates turns. Header directives carry forward across all turns. Inline directives expire at the next `---`.
+Shared `^:` directives are durable by meaning and may appear in either region.
+
+For multi-turn conversations, `---` separates turns. Shared directives and header directives carry forward across all turns. Inline directives expire at the next `---`.
+
+A `---` line is a turn separator only when it appears on its own line outside a braced directive block and outside fenced code.
 
 An optional `<<:hail:` version line, if present, must be the very first line of the document, before the header directives.
+
+## Parsing notes
+
+Speaker names may contain letters, numbers, `_`, and `-`. Speaker names must not match reserved directive names. If a name collides with a directive name, rename the speaker identifier.
+
+Directive names are case-sensitive. Use lowercase.
+
+Whitespace immediately after the final `:` is ignored.
+
+An empty directive value clears that directive in the current scope.
+
+Parsers should preserve directive order.
 
 ## Examples
 
@@ -218,12 +283,58 @@ With one directive:
 What's the capital of France?
 ```
 
+A multi-party collaboration example:
+
+```
+<<:hail: 0.9
+
+^:context: Celtic TV tvOS repo
+^:goal: align the home screen with the design docs
+^:ownership: {
+anthony: product direction
+codex: implementation
+claude: review
+}
+^:status: in_progress
+
+Review the current home screen and propose the next implementation slice.
+
+<<:anthony:priority: high
+<<:anthony:avoid: unnecessary churn
+
+---
+
+>>:codex:assumed: the design docs in kivna/input are the current source of truth
+>>:codex:suggestion: fix the hero Match Hub CTA before broader IA changes
+
+---
+
+>>:claude:suggestion: keep Match Hub as the primary organizing concept but challenge whether the rail card should expand on focus
+^:decision: Match Hub remains the primary organizing concept
+
+---
+
+^:blocked: waiting on API credentials for replay validation
+
+Can the implementation proceed without live playback verification?
+
+---
+
+>>:codex:limit: full playback verification can't be completed until credentials are available
+>>:codex:suggestion: continue with non-network UI and navigation work while blocked
+
+---
+
+^:blocked:
+^:status: review
+```
+
 A full conversation showing scoping, overrides, AI directives, multi-line blocks, examples, and shape:
 
 ```
-<<:hail: 0.4
+<<:hail: 0.9
 
-<<:context: {
+^:context: {
 Medication reminder app for elderly users.
 React Native with Expo. Passed accessibility audit Feb 2026.
 Target: iOS and Android.
@@ -302,14 +413,14 @@ mark it as taken or skip it for today.
 >>:assumed: "Metformin" is a placeholder, the app fills in the real name
 ```
 
-This conversation shows header directives (`<<:context:`, `<<:audience:`, `<<:tone:`, `<<:avoid:`, `<<:example:`) persisting across turns. Inline directives (`<<:length:`, `<<:shape:`) apply only to their turn. The `<<:tone: concerned but not alarming` in turn 3 overrides the header `<<:tone: warm, encouraging`. The `<<:tone:` with no value in turn 5 clears the tone entirely. AI directives (`>>:assumed:`, `>>:suggestion:`, `>>:uncertain:`, `>>:ref:`) surface metadata without breaking the natural response.
+This conversation shows durable shared state (`^:context:`) persisting across turns. Header directives (`<<:audience:`, `<<:tone:`, `<<:avoid:`, `<<:example:`) also persist across turns. Inline directives (`<<:length:`, `<<:shape:`) apply only to their turn. The `<<:tone: concerned but not alarming` in a later turn overrides the earlier header `<<:tone: warm, encouraging`. The `<<:tone:` with no value later clears the tone entirely. AI directives (`>>:assumed:`, `>>:suggestion:`, `>>:uncertain:`, `>>:ref:`) surface metadata without breaking the natural response.
 
 ## Versioning
 
 A Hail document can declare which spec version it targets using `<<:hail:` as the first line of the file.
 
 ```
-<<:hail: 0.4
+<<:hail: 0.9
 
 <<:context: Building a CLI tool in Rust
 
