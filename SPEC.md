@@ -1,6 +1,6 @@
 # Hail: Human-AI Language
 
-Version 0.3.0 (draft)
+Version 0.4.0 (draft)
 
 ## What it is
 
@@ -16,51 +16,51 @@ Encoding: UTF-8
 
 Plain text is valid Hail. Any natural language sentence works. You add structure only when freeform language isn't cutting it.
 
-Directives are persistent. You set `^:context` once and it holds across the conversation until you override it. The scaffolding stays while the conversation evolves around it.
+Directives are persistent. You set `<<:context:` once and it holds across the conversation until you override it. The scaffolding stays while the conversation evolves around it.
 
-Direction is visible. `^:` means human to AI. `v:` means AI to human. You can scan a conversation and instantly know who set what. The colon disambiguates directives from ordinary text (a line starting with "very" won't be misread as a directive).
+Direction is visible. `<<:` means human to AI. `>>:` means AI to human. The symbols work like arrows: `<<:` pushes instructions in, `>>:` pushes observations back out. In a markdown renderer, `>>:` directives display as blockquotes, giving you visual hierarchy for free.
 
 ## Directives
 
-A directive is a line starting with `^:` (human to AI) or `v:` (AI to human). It's metadata. It tells the other side how to interpret the natural language around it.
+A directive is a line starting with `<<:` (human to AI) or `>>:` (AI to human). It's metadata. It tells the other side how to interpret the natural language around it.
 
-### Human directives (^:)
+### Human directives (<<:)
 
-`^:context` sets what the AI needs to know.
+`<<:context:` sets what the AI needs to know.
 
-`^:tone` sets how the response should feel.
+`<<:tone:` sets how the response should feel.
 
-`^:format` sets the shape of the output (bullet list, prose, table, code).
+`<<:format:` sets the shape of the output (bullet list, prose, table, code).
 
-`^:length` sets a size constraint.
+`<<:length:` sets a size constraint.
 
-`^:audience` says who the output is for.
+`<<:audience:` says who the output is for.
 
-`^:example` shows what you want by demonstration.
+`<<:example:` shows what you want by demonstration.
 
-`^:avoid` says what not to do.
+`<<:avoid:` says what not to do.
 
-`^:as` sets a role or persona.
+`<<:as:` sets a role or persona.
 
-`^:shape` defines the expected output structure.
+`<<:shape:` defines the expected output structure.
 
-### AI directives (v:)
+### AI directives (>>:)
 
-`v:assumed` flags what the AI filled in on its own.
+`>>:assumed:` flags what the AI filled in on its own.
 
-`v:uncertain` flags low confidence or ambiguity.
+`>>:uncertain:` flags low confidence or ambiguity.
 
-`v:suggestion` offers something unsolicited but useful.
+`>>:suggestion:` offers something unsolicited but useful.
 
-`v:ref` cites a source.
+`>>:ref:` cites a source.
 
-`v:limit` explains what the AI couldn't do and why.
+`>>:limit:` explains what the AI couldn't do and why.
 
 ### Rules
 
 Directives can appear anywhere in the document: top, inline, bottom.
 
-Multiple directives of the same type stack. `^:tone warm` plus `^:tone concise` means warm and concise.
+Multiple directives of the same type stack. `<<:tone: warm` plus `<<:tone: concise` means warm and concise.
 
 Unknown directives are ignored. This keeps the language forward-compatible. A parser from 2026 won't choke on a directive added in 2028.
 
@@ -73,17 +73,17 @@ Directives have two lifetimes depending on where they appear.
 **Inline directives** appear inside the body, after plain text has started. They are turn-level. They apply to the current turn only and expire at the next `---` separator.
 
 ```
-^:context Building a mobile app       <-- header, persists
-^:tone friendly                        <-- header, persists
+<<:context: Building a mobile app     <-- header, persists
+<<:tone: friendly                      <-- header, persists
 
 What colors should I use?
 
-^:format bullet list                   <-- inline, this turn only
+<<:format: bullet list                 <-- inline, this turn only
 
 ---
 
-Now write the CSS.                     <-- ^:context and ^:tone still active
-                                       <-- ^:format bullet list has expired
+Now write the CSS.                     <-- <<:context: and <<:tone: still active
+                                       <-- <<:format: has expired
 ```
 
 To promote an inline directive to session-level, move it to the header or restate it in a new turn's header block (directives before that turn's first plain text line).
@@ -93,35 +93,35 @@ To promote an inline directive to session-level, move it to the header or restat
 To replace a header directive, restate it with a new value. The old value is gone.
 
 ```
-^:tone friendly
+<<:tone: friendly
 
 What colors should I use?
 
 ---
 
-^:tone formal
+<<:tone: formal
 
 Now write the client proposal.         <-- tone is formal, not friendly
 ```
 
-To clear a directive entirely, use the directive name with no value.
+To clear a directive entirely, use the directive prefix and name with no value.
 
 ```
-^:tone
+<<:tone:
 
 Write whatever feels natural.          <-- no tone constraint
 ```
 
-This works for any directive. `^:avoid` with no value removes all avoid rules. `^:as` with no value drops the persona.
+This works for any directive. `<<:avoid:` with no value removes all avoid rules. `<<:as:` with no value drops the persona.
 
-For stacking directives like `^:example`, clearing removes all stacked values. To replace just one, clear and restate the ones you want to keep.
+For stacking directives like `<<:example:`, clearing removes all stacked values. To replace just one, clear and restate the ones you want to keep.
 
 ## Multi-line blocks
 
 For values longer than one line, use `{ }` brackets after the directive name.
 
 ```
-^:context {
+<<:context: {
 Medication reminder app for elderly users.
 React Native with Expo.
 Passed accessibility audit Feb 2026.
@@ -133,7 +133,7 @@ Blocks can contain any text including code snippets or markdown. Nesting is not 
 AI directives use the same syntax.
 
 ```
-v:suggestion {
+>>:suggestion: {
 Screen 2 uses "tap" but elderly users sometimes
 struggle with tap targets under 44px. Consider
 saying "press the big green button" instead.
@@ -142,18 +142,18 @@ saying "press the big green button" instead.
 
 ## Examples and output shape
 
-The `^:example` directive shows the AI what you want by demonstration.
+The `<<:example:` directive shows the AI what you want by demonstration.
 
 Single line:
 
 ```
-^:example "red" → "warm, energetic"
+<<:example: "red" → "warm, energetic"
 ```
 
 Block:
 
 ```
-^:example {
+<<:example: {
 input: "Your session has expired (error 401)"
 output: "You've been signed out. Tap here to sign back in."
 }
@@ -161,10 +161,10 @@ output: "You've been signed out. Tap here to sign back in."
 
 Multiple examples stack. The AI reads the pattern.
 
-The `^:shape` directive defines expected output structure without being a schema language. It's loose and human-readable.
+The `<<:shape:` directive defines expected output structure without being a schema language. It's loose and human-readable.
 
 ```
-^:shape {
+<<:shape: {
 title: short phrase
 body: 2-3 sentences
 cta: button label, max 4 words
@@ -175,11 +175,11 @@ This is communication, not enforcement. The AI interprets `body: 2-3 sentences` 
 
 ## Document structure
 
-A Hail document has two regions. The header is every `^:` directive before the first line of plain text. The body is everything after. See the Scoping section for how these regions affect directive lifetime.
+A Hail document has two regions. The header is every `<<:` directive before the first line of plain text. The body is everything after. See the Scoping section for how these regions affect directive lifetime.
 
 For multi-turn conversations, `---` separates turns. Header directives carry forward across all turns. Inline directives expire at the next `---`.
 
-An optional `^:hail` version line, if present, must be the very first line of the document, before the header directives.
+An optional `<<:hail:` version line, if present, must be the very first line of the document, before the header directives.
 
 ## Examples
 
@@ -192,32 +192,32 @@ What's the capital of France?
 With one directive:
 
 ```
-^:context studying for a geography exam
+<<:context: studying for a geography exam
 What's the capital of France?
 ```
 
 A full conversation showing scoping, overrides, AI directives, multi-line blocks, examples, and shape:
 
 ```
-^:hail 0.1
+<<:hail: 0.4
 
-^:context {
+<<:context: {
 Medication reminder app for elderly users.
 React Native with Expo. Passed accessibility audit Feb 2026.
 Target: iOS and Android.
 }
-^:audience end users, age 65+
-^:tone warm, encouraging
-^:avoid medical jargon, technical error messages
-^:example {
+<<:audience: end users, age 65+
+<<:tone: warm, encouraging
+<<:avoid: medical jargon, technical error messages
+<<:example: {
 input: "Error 403: Authentication failure"
 output: "We couldn't sign you in. Check your password and try again."
 }
 
 Write onboarding copy for the first 3 screens.
 
-^:length 50 words per screen max
-^:shape {
+<<:length: 50 words per screen max
+<<:shape: {
 screen: int
 heading: short phrase
 body: 2-3 sentences, simple language
@@ -239,33 +239,35 @@ Here's your onboarding copy:
    That's it. We'll remind you, you stay healthy.
    Tap the big green button to get started.
 
-v:assumed screens will have a "Next" button at the bottom
-v:suggestion {
+>>:assumed: screens will have a "Next" button at the bottom
+>>:suggestion: {
 Screen 2 says "tell us" but the input form only has
 medication name and time fields. Consider saying
 "add your medication and pick a time" to match the UI.
 }
-v:ref Apple HIG, Accessibility Guidelines 2026
+>>:ref: Apple HIG, Accessibility Guidelines 2026
 
 ---
 
 Good. Now write the push notification for a missed dose.
 
-^:tone concerned but not alarming
-^:length 2 sentences max
+<<:tone: concerned but not alarming
+<<:length: 2 sentences max
 
 ---
 
 You missed your 2pm medication. Open SimpleHealth to
 mark it as taken or skip it for today.
 
-v:assumed the notification shows the specific time
-v:uncertain do you want the medication name in the notification?
-  some users take multiple meds and the name helps
+>>:assumed: the notification shows the specific time
+>>:uncertain: {
+Do you want the medication name in the notification?
+Some users take multiple meds and the name helps.
+}
 
 ---
 
-^:tone
+<<:tone:
 
 Yes, include the med name. And drop the tone directive,
 just write it plain.
@@ -275,19 +277,19 @@ just write it plain.
 You missed your 2pm Metformin. Open SimpleHealth to
 mark it as taken or skip it for today.
 
-v:assumed "Metformin" is a placeholder, the app fills in the real name
+>>:assumed: "Metformin" is a placeholder, the app fills in the real name
 ```
 
-This conversation shows header directives (`^:context`, `^:audience`, `^:tone`, `^:avoid`, `^:example`) persisting across turns. Inline directives (`^:length`, `^:shape`) apply only to their turn. The `^:tone concerned but not alarming` in turn 3 overrides the header `^:tone warm, encouraging`. The `^:tone` with no value in turn 5 clears the tone entirely. AI directives (`v:assumed`, `v:suggestion`, `v:uncertain`, `v:ref`) surface metadata without breaking the natural response.
+This conversation shows header directives (`<<:context:`, `<<:audience:`, `<<:tone:`, `<<:avoid:`, `<<:example:`) persisting across turns. Inline directives (`<<:length:`, `<<:shape:`) apply only to their turn. The `<<:tone: concerned but not alarming` in turn 3 overrides the header `<<:tone: warm, encouraging`. The `<<:tone:` with no value in turn 5 clears the tone entirely. AI directives (`>>:assumed:`, `>>:suggestion:`, `>>:uncertain:`, `>>:ref:`) surface metadata without breaking the natural response.
 
 ## Versioning
 
-A Hail document can declare which spec version it targets using `^:hail` as the first line of the file.
+A Hail document can declare which spec version it targets using `<<:hail:` as the first line of the file.
 
 ```
-^:hail 0.1
+<<:hail: 0.4
 
-^:context Building a CLI tool in Rust
+<<:context: Building a CLI tool in Rust
 
 How should I structure the argument parser?
 ```
@@ -300,7 +302,7 @@ A parser that encounters a version it doesn't support should warn but still atte
 
 Hail is not a programming language. There's no logic, no conditionals, no loops.
 
-Hail is not a schema language. `^:shape` is a suggestion, not a contract.
+Hail is not a schema language. `<<:shape:` is a suggestion, not a contract.
 
 Hail is not a replacement for conversation. The natural language between directives is where the real communication happens. Directives are scaffolding.
 

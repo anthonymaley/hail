@@ -1,0 +1,60 @@
+<<:hail: 0.4
+
+<<:context: I'm writing a blog post about moving from Sydney to rural Tasmania
+<<:tone: personal, slightly melancholic, honest
+<<:audience: general readers, not tech people
+<<:avoid: cliches about "escaping the rat race" or "finding yourself"
+<<:length: 400 words
+
+<<:example: {
+Good opening: "The removalists broke my favourite mug on the
+third day. I watched the handle separate from the body and
+thought, that's about right."
+
+Bad opening: "Have you ever dreamed of leaving the city behind
+for a simpler life? I did, and here's what happened."
+}
+
+Write the opening section. I moved because my mum got sick,
+not because of some lifestyle fantasy. That matters.
+
+---
+
+The house smelled like someone else's dinners for the first
+two weeks. Lamb fat and something sweet I couldn't place.
+I opened every window even though it was June and the wind
+off the mountain had a mean edge to it.
+
+Mum's place was twenty minutes away if you drove the speed
+limit, which nobody did on those roads. I drove it twice a
+day, morning and evening, and the wallabies got used to my
+headlights. After a while I got used to them too. You stop
+being charmed by wildlife when you're watching your mother
+forget the word for kettle.
+
+Sydney felt like a rumour. The apartment, the harbour commute,
+the $7 coffees. I'd left it all in boxes in the spare room and
+I couldn't tell you what was in most of them. I didn't miss it
+the way people expect you to miss it. I missed the anonymity.
+In Hobart people remembered your name. In the town south of
+Hobart they remembered your car.
+
+The blog was supposed to be about the move. Pictures of the
+garden, the chickens, the fog sitting on the valley like a
+white lid. People wanted that. I could see it in the analytics.
+The posts about mum's appointments got half the traffic. Nobody
+wants to read about someone else's parent declining. They want
+the mug on the windowsill with steam rising off it. I kept
+writing both.
+
+>>:assumed: the blog already exists and has an established readership
+>>:uncertain: {
+You said 400 words. This is about 230. Should I continue
+into the next section or is this meant to be a short,
+punchy opening that you'll build from?
+}
+>>:suggestion: {
+The line "I missed the anonymity" is doing a lot of work.
+Consider letting it sit as its own paragraph. It earns
+the space.
+}

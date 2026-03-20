@@ -1,0 +1,119 @@
+<<:hail: 0.4
+
+<<:context: {
+E-commerce platform, Python/Django backend.
+We ship weekly on Thursdays. This PR needs to
+merge by Wednesday EOD or it misses the cut.
+The payments team owns this code. I don't.
+}
+<<:as: senior engineer reviewing someone else's PR
+<<:tone: direct but not harsh
+<<:audience: the PR author (mid-level dev, 2 years on the team)
+<<:avoid: {
+nitpicks about formatting or import order,
+we have linters for that
+}
+
+Review this function:
+
+def process_refund(order_id, amount=None):
+    order = Order.objects.get(id=order_id)
+    if amount is None:
+        amount = order.total
+    if order.status != "completed":
+        return False
+    stripe.Refund.create(charge=order.charge_id, amount=int(amount * 100))
+    order.status = "refunded"
+    order.save()
+    return True
+
+<<:format: {
+For each issue found:
+- what's wrong (one sentence)
+- why it matters (one sentence)
+- suggested fix (code snippet)
+}
+
+---
+
+Three things worth fixing before this merges.
+
+The `Order.objects.get()` call will throw a 500 if the order doesn't exist. In a refund flow that's bad because support staff trigger these manually and a stack trace tells them nothing. Wrap it or use `get_or_404` depending on the caller.
+
+```python
+try:
+    order = Order.objects.get(id=order_id)
+except Order.DoesNotExist:
+    return False
+```
+
+The Stripe call has no error handling. If Stripe is down or the charge ID is invalid, the function crashes after doing nothing, but if it partially succeeds on a retry you could double-refund. Wrap the Stripe call and don't update order status unless it succeeds.
+
+```python
+try:
+    stripe.Refund.create(charge=order.charge_id, amount=int(amount * 100))
+except stripe.error.StripeError as e:
+    logger.error(f"Refund failed for order {order_id}: {e}")
+    return False
+```
+
+There's no check that `amount` is positive or less than the order total. Someone could accidentally pass a negative number or refund more than was charged. Stripe would reject it but the error message won't be clear.
+
+```python
+if amount <= 0 or amount > order.total:
+    raise ValueError(f"Invalid refund amount: {amount}")
+```
+
+>>:assumed: this is called from an internal admin view, not a public API
+>>:uncertain: {
+Is there a RefundLog or audit trail model? Payments
+code usually needs one for compliance. I don't see
+a log write here but maybe it happens upstream.
+}
+>>:suggestion: the whole function should probably be wrapped in a transaction
+
+---
+
+Good catches. Yes there's a RefundLog, it's in the view that calls this.
+
+The transaction wrapper is a good idea. Can you show me what that looks like?
+
+<<:tone:
+
+<<:length: short
+
+---
+
+```python
+from django.db import transaction
+
+def process_refund(order_id, amount=None):
+    try:
+        order = Order.objects.get(id=order_id)
+    except Order.DoesNotExist:
+        return False
+
+    if amount is None:
+        amount = order.total
+    if amount <= 0 or amount > order.total:
+        raise ValueError(f"Invalid refund amount: {amount}")
+    if order.status != "completed":
+        return False
+
+    with transaction.atomic():
+        try:
+            stripe.Refund.create(
+                charge=order.charge_id,
+                amount=int(amount * 100)
+            )
+        except stripe.error.StripeError as e:
+            logger.error(f"Refund failed for order {order_id}: {e}")
+            return False
+        order.status = "refunded"
+        order.save()
+
+    return True
+```
+
+>>:assumed: you'll add the RefundLog write in the calling view as before
+>>:ref: Stripe API docs recommend idempotency keys for refunds, worth adding later
