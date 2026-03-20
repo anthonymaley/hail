@@ -1,12 +1,12 @@
 # TODO
 
-## Current Session
+## Next
 
-## Backlog
+- Use Hail in real repos and gather feedback
+- `^:clear:` bulk reset directive (waiting for real usage to prove it's needed)
 
-- Make repo public and plan launch
-- Start using Hail in real repos (leru, others)
-- `^:clear:` bulk reset directive (defer until real usage shows state bloat is common)
-- Tooling: parser library
-- Tooling: syntax highlighting (VS Code extension)
-- Tooling: CLI validator
+## Tooling
+
+- Parser library (JavaScript/TypeScript)
+- VS Code syntax highlighting extension
+- CLI validator

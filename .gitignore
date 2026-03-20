@@ -1,6 +1,6 @@
-kivna/input/
-kivna/output/
 .DS_Store
+kivna/
+.slainte
 *.tmp
 *.log
 *.bak

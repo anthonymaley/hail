@@ -12,20 +12,22 @@ Clone the repo. Read `SPEC.md`. For practical usage patterns, read `docs/usage-g
 
 ## Architecture
 
-Hail is a markup language spec with three directive channels: `^:` (durable shared state), `<<:` (human-to-AI flow), `>>:` (AI-to-human feedback). The core artifact is `SPEC.md`. Supporting docs live in `docs/`. Examples live in `examples/`.
+Hail is a markup language spec with three directive channels: `^:` (durable shared state), `<<:` (human-to-AI flow), `>>:` (AI-to-human feedback). Two parsing modes: native (`.hail` files or `<<:hail:` opt-in) and embedded (plain `.md` files).
 
 ## Repo Structure
 
 ```
 SPEC.md                      — the language specification
-README.md                    — project overview and quick example
-CLAUDE.md                    — session workflow for Claude Code
-AGENTS.md                    — session workflow for Codex
+README.md                    — public landing page
+LICENSE                      — MIT
+CLAUDE.md                    — session workflow (Claude Code)
+AGENTS.md                    — session workflow (Codex)
+TODO.md                      — roadmap
 docs/
-  usage-guide.md             — practical rules for using Hail in repos
-  readme-template.md         — snippet to paste into repos that use Hail
+  usage-guide.md             — practical rules for using Hail
+  readme-template.md         — snippet for repos that use Hail
   playbook.md                — this file
-  proposals/                 — historical spec proposals and reviews
+  proposals/                 — design proposals and reviews
 examples/
   code-review.md             — code review conversation
   creative-writing.md        — blog post writing
@@ -33,18 +35,10 @@ examples/
   quick-task.md              — minimal one-shot task
 ```
 
-## Integrations
-
-None yet.
-
-## Deployment
-
-Not applicable. The spec is the deliverable. When tooling is built (parser, syntax highlighting, CLI), deployment will be via npm/crates/pip.
-
 ## Gotchas
 
-The `^:` prefix was used for human directives in v0.1 through v0.3. It was removed in v0.4 when we switched to `<<:`/`>>:`. In v0.9, `^:` returned with new semantics as directionless shared state. Git history reflects this evolution.
+The `^:` prefix was used for human directives in v0.1 through v0.3, removed in v0.4, and reintroduced in v0.9 with new semantics as directionless shared state. Git history reflects this evolution.
 
 ## Current Status
 
-Spec at v0.9.1 (draft). Three-channel model (`^:` / `<<:` / `>>:`), named directives, durable shared state, per-turn header scoping, stackable directive list, native/embedded parsing modes, structural colon disambiguation. Reviewed by Claude, Gemini, ChatGPT, and Codex. Usage guide and README template written. Ready for real-world use. No tooling yet.
+Spec at v0.9.1 (draft). Three-channel model, native/embedded parsing modes, per-turn header scoping, stackable directive list, structural colon disambiguation, named directives. Reviewed by Claude, Gemini, ChatGPT, and Codex. No tooling yet.
