@@ -31,5 +31,6 @@ Review the current home screen and propose the next implementation slice.
 Guidelines:
 - Use `^:` for goals, constraints, decisions, blockers, and ownership.
 - Use `<<:` for temporary instructions about the current request.
-- Use `>>:` for assumptions, uncertainty, references, and limits.
+- Use `>>:` for assumptions, uncertainty, references, and limits. These don't persist across turns.
+- For multi-turn `.md` files, add `<<:hail:` on the first line to enable turn separators.
 - If in doubt, use plain language first and add Hail directives only where they improve clarity.

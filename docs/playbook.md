@@ -19,6 +19,8 @@ Hail is a markup language spec with three directive channels: `^:` (durable shar
 ```
 SPEC.md                      — the language specification
 README.md                    — project overview and quick example
+CLAUDE.md                    — session workflow for Claude Code
+AGENTS.md                    — session workflow for Codex
 docs/
   usage-guide.md             — practical rules for using Hail in repos
   readme-template.md         — snippet to paste into repos that use Hail
@@ -45,4 +47,4 @@ The `^:` prefix was used for human directives in v0.1 through v0.3. It was remov
 
 ## Current Status
 
-Spec at v0.9.0 (draft). Three-channel model (`^:` / `<<:` / `>>:`), named directives for multi-party work, durable shared state, scoping rules, multi-line blocks, examples, versioning. Reviewed by Claude and Gemini. Usage guide and README template written. Ready for real-world use in repos. No tooling yet.
+Spec at v0.9.1 (draft). Three-channel model (`^:` / `<<:` / `>>:`), named directives, durable shared state, per-turn header scoping, stackable directive list, native/embedded parsing modes, structural colon disambiguation. Reviewed by Claude, Gemini, ChatGPT, and Codex. Usage guide and README template written. Ready for real-world use. No tooling yet.
