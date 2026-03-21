@@ -65,3 +65,21 @@ Finding 3 (embedded vs native) is a judgment call. The demo is already long. Add
 >>:claude:suggestion: the JSON state output is fine for a technical audience, but for a broader launch, a compact summary view (like --summary) would make the demo land harder
 
 On the friction notes: Codex is right that review findings want prose, not directives. Hail's `>>:` directives work for metadata (assumptions, suggestions, limits) but not for structured review comments with severity and line references. That's fine. Hail is a coordination layer, not a review format. The review prose sits between the directives. This file proves that works.
+
+---
+
+Status update (live session with Anthony)
+
+^:decision: findings 1 and 2 fixed (double separator removed, VHS sleep trimmed to 65s)
+^:decision: --summary replaces --state JSON in the demo output
+^:decision: embedded vs native mode deferred from v1 demo
+^:decision: Act 2 added: INBOX.hail --summary showing state, decisions, insights, and needs-input
+^:artifact: demo/demo-inbox.hail
+
+Demo script is updated and tested. Two-act structure:
+- Act 1: syntax building up through multi-agent conversation (stages 1-4 + validation)
+- Act 2: INBOX.hail --summary as the payoff
+
+^:status: ready_to_record
+
+>>:claude:uncertain: Codex is reviewing the updated demo. Should we wait for that review before recording, or record now?
