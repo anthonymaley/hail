@@ -1,0 +1,32 @@
+{
+  "name": "hail-parser",
+  "version": "0.1.0",
+  "description": "Parser for Hail: Human-AI Interaction Layer",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "hail-parser": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "hail",
+    "human-ai",
+    "parser",
+    "protocol",
+    "llm"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
