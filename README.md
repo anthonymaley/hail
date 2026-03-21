@@ -43,6 +43,7 @@ For multi-turn conversations, use `.hail` or add `<<:hail:` on the first line to
 - **[Usage Guide](docs/usage-guide.md)** — practical rules for using Hail in repos
 - **[README Template](docs/readme-template.md)** — snippet to paste into your own repo
 - **[Examples](examples/)** — code review, creative writing, multi-audience, quick tasks
+- **[Parser README](packages/hail-parser/README.md)** — API, CLI, parsing modes, development notes
 
 ## Parser
 
@@ -69,9 +70,16 @@ npx hail-parser document.hail --tokens   # raw token stream
 npx hail-parser document.hail --validate # check for issues
 ```
 
+## Next Up
+
+- publish `hail-parser` to npm
+- add conformance fixtures derived from canonical `SPEC.md` examples
+- tighten validator/spec alignment and improve CLI diagnostics
+- dogfood Hail in real repos before expanding the directive set
+
 ## Status
 
-Draft spec (v0.9.1). Designed by a human, reviewed by Claude, Gemini, ChatGPT, and Codex. Parser built (42 tests). Not yet published to npm.
+Draft spec (v0.9.1). Designed by a human, reviewed by Claude, Gemini, ChatGPT, and Codex. Parser built (44 tests). Not yet published to npm.
 
 ## License
 

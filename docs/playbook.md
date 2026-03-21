@@ -8,7 +8,7 @@ TypeScript (parser). The spec lives in `SPEC.md`. The parser lives in `packages/
 
 ## Setup
 
-Clone the repo. Read `SPEC.md`. For practical usage patterns, read `docs/usage-guide.md`.
+Clone the repo. Read `SPEC.md`. For practical usage patterns, read `docs/usage-guide.md`. For parser work, use `packages/hail-parser/README.md`, then run `npm test` and `npm run build` in `packages/hail-parser/`.
 
 ## Architecture
 
@@ -35,8 +35,9 @@ examples/
   quick-task.md              — minimal one-shot task
 packages/
   hail-parser/               — TypeScript parser and CLI
+    README.md                — package usage and development notes
     src/                     — tokenizer, parser, types, CLI
-    tests/                   — 42 tests
+    tests/                   — 44 tests
 ```
 
 ## Gotchas
@@ -45,4 +46,4 @@ The `^:` prefix was used for human directives in v0.1 through v0.3, removed in v
 
 ## Current Status
 
-Spec at v0.9.1 (draft). Three-channel model, native/embedded parsing modes, per-turn header scoping, stackable directive list, structural colon disambiguation, named directives. Parser built (TypeScript, 42 tests, zero runtime deps). Reviewed by Claude, Gemini, ChatGPT, and Codex. Not yet published to npm.
+Spec at v0.9.1 (draft). Three-channel model, native/embedded parsing modes, per-turn header scoping, stackable directive list, structural colon disambiguation, named directives. Parser built (TypeScript, 44 tests, zero runtime deps) with CLI validation and fenced-code handling. Package README added. Not yet published to npm. Next priorities: publish parser, add spec-derived conformance fixtures, tighten validator/spec alignment, and dogfood in real repos.

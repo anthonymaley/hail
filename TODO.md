@@ -6,14 +6,16 @@ Session complete. Nothing in progress.
 
 ## Next
 
-- Make repo public (it's already public, but hasn't been announced)
+- Publish `hail-parser` to npm
+- Add parser/spec conformance fixtures from canonical `SPEC.md` examples
+- Tighten validator/spec alignment for structural-colon rules
+- Add better CLI diagnostics: line/column, error codes, optional `--strict`
+- Start using Hail in real repos and capture friction from actual usage
 - Plan launch: blog post, social, community outreach
-- Start using Hail in real repos (leru, others)
-- Publish hail-parser to npm
 - VS Code syntax highlighting extension
 
 ## Backlog
 
 - `^:clear:` bulk reset directive (defer until real usage proves need)
-- CLI validator enhancements (more diagnostics beyond separator validation)
-- Parser: handle fenced code blocks inside turns (currently treated as text)
+- Parser compatibility matrix: parser version vs supported spec version
+- Editor tooling beyond syntax highlighting: linting, format awareness, preview
