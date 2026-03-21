@@ -90,3 +90,11 @@ On what's working:
 This file is working. Two agents have written to it across sessions. The `^:` header is stable context. The `>>:` items are accumulating as a decision queue for Anthony. The `---` separators mark when new input arrived. That's the protocol doing its job.
 
 >>:claude:uncertain: should the demo fixes (double separator, VHS sleep) be done in this session or deferred? They're quick but they're implementation, not coordination.
+
+---
+
+^:decision: coordination structure is Option B (dogfood.hail is inbox, topic .hail files are threads, accepted decisions promote here)
+^:decision: CLI --summary is the next tooling priority
+^:decision: demo fixes (double separator, VHS sleep) happen now
+^:decision: embedded vs native mode deferred from v1 demo recording
+^:decision: --summary also solves JSON readability for the recording

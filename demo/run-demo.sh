@@ -27,7 +27,7 @@ echo "━━━ Parser: active state after turn 1 ━━━"
 echo ""
 sleep 1
 $PARSER "$DEMO/stage-1.hail" --state
-sleep 4
+sleep 3
 
 # Stage 2: Claude responds
 echo ""
@@ -35,8 +35,7 @@ echo ""
 echo "━━━ Stage 2: Claude responds with content + feedback ━━━"
 echo ""
 sleep 1
-# Show just the new turn (tail of stage 2)
-echo "--- (turn separator)"
+echo "---"
 echo ""
 tail -n 12 "$DEMO/stage-2.hail"
 echo ""
@@ -48,8 +47,8 @@ echo ""
 sleep 1
 $PARSER "$DEMO/stage-2.hail" --state
 echo ""
-echo "  ↑ Durable state (^:) persists. Response state (>>:) is turn-scoped."
-sleep 4
+echo "  ↑ Durable ^: persists. Response >>: is turn-scoped."
+sleep 3
 
 # Stage 3: Codex adds review + decision is made
 echo ""
@@ -57,8 +56,6 @@ echo ""
 echo "━━━ Stage 3: Codex reviews + team records a decision ━━━"
 echo ""
 sleep 1
-echo "--- (turn separator)"
-echo ""
 tail -n 7 "$DEMO/stage-3.hail"
 echo ""
 sleep 3
@@ -70,7 +67,7 @@ sleep 1
 $PARSER "$DEMO/stage-3.hail" --state
 echo ""
 echo "  ↑ ^:decision: is now durable shared state."
-sleep 4
+sleep 3
 
 # Stage 4: Blocker appears, status changes
 echo ""
@@ -78,8 +75,6 @@ echo ""
 echo "━━━ Stage 4: Blocker + status change ━━━"
 echo ""
 sleep 1
-echo "--- (turn separator)"
-echo ""
 tail -n 4 "$DEMO/stage-4.hail"
 echo ""
 sleep 3
@@ -90,8 +85,8 @@ echo ""
 sleep 1
 $PARSER "$DEMO/stage-4.hail" --state
 echo ""
-echo "  ↑ ^:blocked: is active. ^:status: changed to review."
-sleep 4
+echo "  ↑ ^:blocked: active. ^:status: changed to review."
+sleep 3
 
 # Validation demo
 echo ""
@@ -107,15 +102,6 @@ echo "Running: hail-parser bad-example.hail --validate"
 echo ""
 $PARSER "$DEMO/bad-example.hail" --validate 2>&1
 echo ""
-sleep 3
-
-# Token view
-echo ""
-echo "━━━ Tokenizer: raw token stream (first 5) ━━━"
-echo ""
-sleep 1
-$PARSER "$DEMO/stage-1.hail" --tokens | head -40
-echo "  ..."
 sleep 3
 
 echo ""
