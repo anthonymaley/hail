@@ -41,10 +41,10 @@ function parseDirectiveLine(
   }
 
   // Find the final structural colon.
-  // The final structural colon is followed by a space, {, or end of line.
-  // We scan for "word:" or "word:word:" patterns before the value.
+  // The final structural colon must be followed by a space, {, or end of line.
+  // Named: word:word: (space|{|EOL)  Unnamed: word: (space|{|EOL)
   const headerMatch = rest.match(
-    /^([a-zA-Z0-9_-]+):([a-zA-Z0-9_-]+):\s*(.*)$|^([a-zA-Z0-9_-]+):\s*(.*)$/,
+    /^([a-zA-Z0-9_-]+):([a-zA-Z0-9_-]+):(?=\s|{|$)\s*(.*)$|^([a-zA-Z0-9_-]+):(?=\s|{|$)\s*(.*)$/,
   )
 
   if (!headerMatch) return null

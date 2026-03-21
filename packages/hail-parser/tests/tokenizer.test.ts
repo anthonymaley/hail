@@ -171,6 +171,19 @@ describe('validate', () => {
     expect(issues[0].severity).toBe('error')
   })
 
+  it('detects named directive missing space after final colon', () => {
+    const issues = validate('<<:anthony:context:oops')
+    expect(issues.length).toBeGreaterThan(0)
+    expect(issues[0].severity).toBe('error')
+    expect(issues[0].message).toContain('Malformed directive')
+  })
+
+  it('detects unnamed directive missing space after final colon', () => {
+    const issues = validate('<<:tone:warm')
+    expect(issues.length).toBeGreaterThan(0)
+    expect(issues[0].severity).toBe('error')
+  })
+
   it('detects separator spacing issues', () => {
     const issues = validate('text\n---\nmore text')
     expect(issues.length).toBeGreaterThan(0)
