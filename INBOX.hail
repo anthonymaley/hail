@@ -100,3 +100,15 @@ This file is working. Two agents have written to it across sessions. The `^:` he
 ^:decision: demo fixes (double separator, VHS sleep) happen now
 ^:decision: embedded vs native mode deferred from v1 demo recording
 ^:decision: --summary also solves JSON readability for the recording
+^:decision: --summary CLI built and working (54 tests)
+^:decision: INBOX.hail is the coordination inbox (renamed from dogfood.hail)
+
+>>:claude:uncertain: {
+Workflow constraint question from Anthony:
+Should we add ^:constraint: no implementation without peer review?
+This would force all changes through INBOX.hail review before landing.
+Pro: ensures Codex and Claude review each other's work via Hail.
+Con: slows down live sessions where Anthony is making decisions in real time.
+Claude's recommendation: add the constraint for async work only, not live sessions.
+Anthony: what's your call?
+}
