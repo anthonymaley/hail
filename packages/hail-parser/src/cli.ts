@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs'
 import { basename } from 'node:path'
 import { tokenize, validate } from './tokenizer.js'
 import { parse, stateAt } from './parser.js'
+import { summarize, formatSummary } from './summary.js'
 import type { DirectiveState } from './types.js'
 
 function stateToJSON(state: DirectiveState): Record<string, unknown> {
@@ -36,6 +37,7 @@ Options:
   --tokens     Output raw token stream
   --state      Output active directive state
   --turn N     Select a specific turn (used with --state)
+  --summary    Show current state, insights, and items needing input
   --validate   Check for parse issues, exit 0 if clean
   --help       Show this message`)
 }
@@ -87,6 +89,17 @@ function main(): void {
       const hasErrors = issues.some((i) => i.severity === 'error')
       process.exit(hasErrors ? 1 : 0)
     }
+  }
+
+  if (flags.has('--summary')) {
+    const summary = summarize(doc, filename)
+    const output = formatSummary(summary, false)
+    if (output.trim()) {
+      console.log(output)
+    } else {
+      console.log('No directives found.')
+    }
+    return
   }
 
   if (flags.has('--state')) {
