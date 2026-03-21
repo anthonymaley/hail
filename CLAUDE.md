@@ -1,19 +1,33 @@
 # Hail
 
+## Hail Collaboration
+
 <!-- Collaboration metadata in this file uses Hail directives: https://github.com/anthonymaley/hail/blob/main/SPEC.md -->
 
-^:context: Hail spec repo. Defines the Human-AI Interaction Layer protocol and ships hail-parser (TypeScript). Spec at v0.9.1, parser at v0.1.0 with 44 tests. Public repo, MIT licensed. Not yet published to npm.
-^:goal: dogfood Hail in real repos, publish parser to npm, plan public launch
+^:context: {
+The Hail repo defines and dogfoods Hail, a plain-text protocol for human-AI collaboration.
+Primary artifacts live in `SPEC.md`, `docs/usage-guide.md`, `CLAUDE.md`, `AGENTS.md`, and `packages/hail-parser/`.
+Current state: draft spec v0.9.1, parser and CLI implemented locally, package not yet published to npm.
+}
+^:goal: Start using Hail directives in this repo for collaboration between Anthony, Codex, and Claude while hardening the spec and parser through real usage.
 ^:ownership: {
-anthony: direction and design decisions
-codex: implementation and spec hardening
-claude: review, writing, and skriv voice
+anthony: direction
+codex: implementation
+claude: review
 }
 ^:status: in_progress
+^:constraint: {
+When wrapping up a session (`/kerd:switch out` or `/kerd:dian`), update `TODO.md`.
+When steps, tools, config, or status change, update `docs/playbook.md` and always refresh "Current Status".
+Follow the Doc Impact Table when changing `README.md`, `SPEC.md`, `docs/usage-guide.md`, `docs/playbook.md`, or `TODO.md`.
+}
 ^:constraint: keep the spec minimal; add directives only when real usage proves the need
 ^:constraint: no runtime dependencies in hail-parser
 ^:artifact: SPEC.md
 ^:artifact: packages/hail-parser/
+^:artifact: INBOX.hail
+
+At the start of each session, read `INBOX.hail` for open decisions, suggestions, and blockers. Write to it when something needs Anthony's input or when a decision is made.
 
 ## Session Workflow
 

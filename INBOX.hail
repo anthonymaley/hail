@@ -1,9 +1,10 @@
 <<:hail: 0.9
 
 ^:context: {
-Repo-level coordination file for dogfooding Hail inside the Hail repo.
-Use this file to surface durable state, human-required decisions, important AI insights, and blockers across Anthony, Codex, and Claude.
-Keep it focused on active coordination, not full transcripts.
+INBOX.hail is the coordination inbox for the Hail repo.
+All agents should read this file at the start of a session.
+Write here when something needs human input, when a decision is made, or when a blocker changes.
+Topic-specific threads live in their own .hail files (e.g. demo/REVIEW.hail). Accepted decisions from threads get promoted here.
 }
 
 ^:goal: Dogfood Hail as the shared coordination layer for spec work, parser/tooling work, and cross-agent review so important human decisions are explicit and easy to react to.
@@ -25,6 +26,7 @@ Keep this file as a coordination layer, not a complete log of every exchange.
 ^:artifact: SPEC.md
 ^:artifact: docs/usage-guide.md
 ^:artifact: packages/hail-parser/
+^:artifact: INBOX.hail
 ^:artifact: demo/REVIEW.hail
 
 Use this file to capture:
