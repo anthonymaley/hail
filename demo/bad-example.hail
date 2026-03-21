@@ -1,0 +1,8 @@
+<<:hail: 0.9
+
+^:context: test document
+<<:tone:warm
+<<:
+<<:anthony:context:missing space
+
+Some text here

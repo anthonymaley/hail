@@ -1,0 +1,35 @@
+<<:hail: 0.9
+
+^:context: Mobile medication reminder app for elderly users
+^:goal: write onboarding copy for the first 3 screens
+^:ownership: {
+anthony: direction
+codex: implementation
+claude: writing
+}
+^:status: in_progress
+<<:tone: warm, encouraging
+<<:length: 50 words per screen max
+
+Write the onboarding screens.
+
+---
+
+1. Welcome to SimpleHealth. We help you take your
+   medication on time, every time. No fuss.
+
+2. Tell us what you take and when. We'll send you
+   a gentle nudge when it's time.
+
+3. That's it. Tap the big green button to start.
+
+>>:claude:assumed: screens have a Next button at the bottom
+>>:claude:suggestion: say "press" instead of "tap" for elderly users
+>>:claude:ref: Apple HIG Accessibility Guidelines 2026
+
+---
+
+>>:codex:suggestion: the form on screen 2 only has name and time fields, copy should match
+>>:codex:limit: can't verify button size without the design file
+
+^:decision: use "press" instead of "tap" throughout the app

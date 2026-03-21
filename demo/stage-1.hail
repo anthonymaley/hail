@@ -1,0 +1,14 @@
+<<:hail: 0.9
+
+^:context: Mobile medication reminder app for elderly users
+^:goal: write onboarding copy for the first 3 screens
+^:ownership: {
+anthony: direction
+codex: implementation
+claude: writing
+}
+^:status: in_progress
+<<:tone: warm, encouraging
+<<:length: 50 words per screen max
+
+Write the onboarding screens.
