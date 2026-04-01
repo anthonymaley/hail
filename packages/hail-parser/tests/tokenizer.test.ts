@@ -217,4 +217,18 @@ describe('validate', () => {
     const issues = validate('<<:my-bot:tone: warm')
     expect(issues).toHaveLength(0)
   })
+
+  it('rejects three-segment directive with specific message', () => {
+    const issues = validate('<<:a:b:c: value')
+    expect(issues).toHaveLength(1)
+    expect(issues[0].severity).toBe('error')
+    expect(issues[0].message).toContain('Too many segments')
+  })
+
+  it('rejects four-segment directive with specific message', () => {
+    const issues = validate('>>:a:b:c:d: value')
+    expect(issues).toHaveLength(1)
+    expect(issues[0].severity).toBe('error')
+    expect(issues[0].message).toContain('Too many segments')
+  })
 })

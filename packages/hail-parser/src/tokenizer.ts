@@ -206,11 +206,23 @@ export function validate(source: string): ValidationIssue[] {
     if (startsWithChannelPrefix(raw)) {
       const parsed = parseDirectiveLine(raw, lineNum)
       if (!parsed) {
-        issues.push({
-          line: lineNum,
-          message: `Malformed directive: ${raw}`,
-          severity: 'error',
-        })
+        const afterPrefix = raw.replace(/^(\^:|<<:|>>:)/, '')
+        const segmentMatch = afterPrefix.match(
+          /^([a-zA-Z0-9_-]+:){2,}(?=\s|{|$)/,
+        )
+        if (segmentMatch) {
+          issues.push({
+            line: lineNum,
+            message: `Too many segments in directive header: ${raw}. Named directives use channel:speaker:name: format (max two segments after prefix).`,
+            severity: 'error',
+          })
+        } else {
+          issues.push({
+            line: lineNum,
+            message: `Malformed directive: ${raw}`,
+            severity: 'error',
+          })
+        }
       } else if (parsed.type === 'block_start') {
         inBlock = true
       }

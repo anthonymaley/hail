@@ -425,11 +425,11 @@ describe('named directive structural disambiguation', () => {
     expect(dt.value).toBe('error 403: something went wrong')
   })
 
-  it('more than two segments is invalid — validate() produces a Malformed directive error', () => {
+  it('more than two segments is invalid — validate() produces a Too many segments error', () => {
     const issues = validate('<<:a:b:c: value')
     const errors = issues.filter((i) => i.severity === 'error')
     expect(errors.length).toBeGreaterThan(0)
-    expect(errors[0].message).toContain('Malformed directive')
+    expect(errors[0].message).toContain('Too many segments')
   })
 
   it('speaker names may contain letters, numbers, underscores, and hyphens', () => {
