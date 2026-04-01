@@ -168,6 +168,8 @@ export function tokenize(source: string): Token[] {
 
 export interface ValidationIssue {
   line: number
+  column: number
+  code: string
   message: string
   severity: 'error' | 'warning'
 }
@@ -213,12 +215,16 @@ export function validate(source: string): ValidationIssue[] {
         if (segmentMatch) {
           issues.push({
             line: lineNum,
+            column: 1,
+            code: 'E002',
             message: `Too many segments in directive header: ${raw}. Named directives use channel:speaker:name: format (max two segments after prefix).`,
             severity: 'error',
           })
         } else {
           issues.push({
             line: lineNum,
+            column: 1,
+            code: 'E001',
             message: `Malformed directive: ${raw}`,
             severity: 'error',
           })
@@ -233,6 +239,8 @@ export function validate(source: string): ValidationIssue[] {
         if (dt.name !== dt.name.toLowerCase()) {
           issues.push({
             line: lineNum,
+            column: 1,
+            code: 'W002',
             message: `Directive name "${dt.name}" should be lowercase`,
             severity: 'warning',
           })
@@ -240,6 +248,8 @@ export function validate(source: string): ValidationIssue[] {
         if (dt.speaker && dt.speaker !== dt.speaker.toLowerCase()) {
           issues.push({
             line: lineNum,
+            column: 1,
+            code: 'W002',
             message: `Speaker name "${dt.speaker}" should be lowercase`,
             severity: 'warning',
           })
@@ -251,6 +261,8 @@ export function validate(source: string): ValidationIssue[] {
     if (lineNum > 1 && raw.match(VERSION_RE)) {
       issues.push({
         line: lineNum,
+        column: 1,
+        code: 'W003',
         message: '<<:hail: version line should be on the first line of the document',
         severity: 'warning',
       })
@@ -263,6 +275,8 @@ export function validate(source: string): ValidationIssue[] {
       if (!prevBlank || !nextBlank) {
         issues.push({
           line: lineNum,
+          column: 1,
+          code: 'W001',
           message: 'Turn separator missing blank lines before/after',
           severity: 'warning',
         })
@@ -273,6 +287,8 @@ export function validate(source: string): ValidationIssue[] {
   if (inBlock) {
     issues.push({
       line: lines.length,
+      column: 1,
+      code: 'E003',
       message: 'Unclosed block: missing closing }',
       severity: 'error',
     })
@@ -281,6 +297,8 @@ export function validate(source: string): ValidationIssue[] {
   if (inFence) {
     issues.push({
       line: lines.length,
+      column: 1,
+      code: 'W004',
       message: 'Unclosed fenced code block',
       severity: 'warning',
     })

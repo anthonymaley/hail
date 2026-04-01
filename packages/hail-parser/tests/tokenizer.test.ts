@@ -252,3 +252,51 @@ describe('validate', () => {
     expect(warnings).toHaveLength(0)
   })
 })
+
+describe('error codes and columns', () => {
+  it('malformed directive has code E001', () => {
+    const issues = validate('<<:')
+    expect(issues[0].code).toBe('E001')
+  })
+
+  it('too many segments has code E002', () => {
+    const issues = validate('<<:a:b:c: value')
+    expect(issues[0].code).toBe('E002')
+  })
+
+  it('unclosed block has code E003', () => {
+    const issues = validate('^:context: {\nsome content')
+    expect(issues[0].code).toBe('E003')
+  })
+
+  it('separator spacing has code W001', () => {
+    const issues = validate('text\n---\nmore')
+    expect(issues[0].code).toBe('W001')
+  })
+
+  it('uppercase name has code W002', () => {
+    const issues = validate('<<:Tone: warm')
+    expect(issues[0].code).toBe('W002')
+  })
+
+  it('misplaced version has code W003', () => {
+    const issues = validate('text\n<<:hail: 0.9')
+    const w = issues.find((i) => i.code === 'W003')
+    expect(w).toBeDefined()
+  })
+
+  it('unclosed fence has code W004', () => {
+    const issues = validate('```\nsome code')
+    expect(issues[0].code).toBe('W004')
+  })
+
+  it('malformed directive column points to start of line', () => {
+    const issues = validate('<<:')
+    expect(issues[0].column).toBe(1)
+  })
+
+  it('issues have column field', () => {
+    const issues = validate('<<:Tone: warm')
+    expect(typeof issues[0].column).toBe('number')
+  })
+})
