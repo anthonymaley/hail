@@ -231,4 +231,24 @@ describe('validate', () => {
     expect(issues[0].severity).toBe('error')
     expect(issues[0].message).toContain('Too many segments')
   })
+
+  it('warns on uppercase directive names', () => {
+    const issues = validate('<<:Tone: warm')
+    const warnings = issues.filter((i) => i.severity === 'warning')
+    expect(warnings).toHaveLength(1)
+    expect(warnings[0].message).toContain('lowercase')
+  })
+
+  it('warns on <<:hail: not on first line', () => {
+    const issues = validate('some text\n<<:hail: 0.9')
+    const warnings = issues.filter((i) => i.severity === 'warning')
+    expect(warnings.length).toBeGreaterThan(0)
+    expect(warnings.some((w) => w.message.includes('first line'))).toBe(true)
+  })
+
+  it('does not warn on <<:hail: on first line', () => {
+    const issues = validate('<<:hail: 0.9\n\nHello')
+    const warnings = issues.filter((i) => i.message.includes('first line'))
+    expect(warnings).toHaveLength(0)
+  })
 })

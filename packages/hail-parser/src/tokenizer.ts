@@ -226,6 +226,34 @@ export function validate(source: string): ValidationIssue[] {
       } else if (parsed.type === 'block_start') {
         inBlock = true
       }
+
+      // Warn on uppercase in directive or speaker names
+      if (parsed && parsed.type !== 'version') {
+        const dt = parsed as DirectiveToken
+        if (dt.name !== dt.name.toLowerCase()) {
+          issues.push({
+            line: lineNum,
+            message: `Directive name "${dt.name}" should be lowercase`,
+            severity: 'warning',
+          })
+        }
+        if (dt.speaker && dt.speaker !== dt.speaker.toLowerCase()) {
+          issues.push({
+            line: lineNum,
+            message: `Speaker name "${dt.speaker}" should be lowercase`,
+            severity: 'warning',
+          })
+        }
+      }
+    }
+
+    // Check for <<:hail: not on first line
+    if (lineNum > 1 && raw.match(VERSION_RE)) {
+      issues.push({
+        line: lineNum,
+        message: '<<:hail: version line should be on the first line of the document',
+        severity: 'warning',
+      })
     }
 
     // Check separator spacing
