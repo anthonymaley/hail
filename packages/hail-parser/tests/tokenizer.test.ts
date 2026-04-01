@@ -200,4 +200,21 @@ describe('validate', () => {
     const issues = validate('```\n<<:broken:stuff:here\n```')
     expect(issues).toHaveLength(0)
   })
+
+  it('warns on speaker names with invalid characters', () => {
+    const issues = validate('<<:anthony!:tone: warm')
+    // The `!` makes the regex not match, so it's already a malformed directive
+    expect(issues.length).toBeGreaterThan(0)
+    expect(issues[0].severity).toBe('error')
+  })
+
+  it('accepts valid speaker name characters', () => {
+    const issues = validate('<<:agent_1:tone: warm')
+    expect(issues).toHaveLength(0)
+  })
+
+  it('accepts hyphenated speaker names', () => {
+    const issues = validate('<<:my-bot:tone: warm')
+    expect(issues).toHaveLength(0)
+  })
 })
