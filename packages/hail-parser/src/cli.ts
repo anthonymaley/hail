@@ -39,6 +39,7 @@ Options:
   --turn N     Select a specific turn (used with --state)
   --summary    Show current state, insights, and items needing input
   --validate   Check for parse issues, exit 0 if clean
+  --strict     Treat warnings as errors (used with --validate)
   --help       Show this message`)
 }
 
@@ -84,10 +85,14 @@ function main(): void {
     } else {
       for (const issue of issues) {
         const prefix = issue.severity === 'error' ? 'ERROR' : 'WARN'
-        console.error(`${prefix} line ${issue.line}: ${issue.message}`)
+        console.error(
+          `${prefix} ${issue.code} at ${issue.line}:${issue.column}: ${issue.message}`,
+        )
       }
+      const strict = flags.has('--strict')
       const hasErrors = issues.some((i) => i.severity === 'error')
-      process.exit(hasErrors ? 1 : 0)
+      const hasWarnings = issues.some((i) => i.severity === 'warning')
+      process.exit(hasErrors || (strict && hasWarnings) ? 1 : 0)
     }
   }
 
